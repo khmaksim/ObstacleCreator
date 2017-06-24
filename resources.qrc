@@ -3,5 +3,6 @@
         <file>images/logo.png</file>
         <file>images/settings.png</file>
         <file>images/A.png</file>
+        <file>descriptionFileName.txt</file>
     </qresource>
 </RCC>

@@ -177,3 +177,8 @@ void MainDialog::showSettings()
     SettingsDialog settingsDialog(this);
     settingsDialog.exec();
 }
+
+void MainDialog::createFile()
+{
+
+}

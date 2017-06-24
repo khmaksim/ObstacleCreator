@@ -36,6 +36,7 @@ class MainDialog : public QDialog
         void getInfoByAirfield(const QModelIndex&);
         void searchObstacle();
         void showSettings();
+        void createFile();
 
     signals:
         void selectionAirfield(bool f=true);

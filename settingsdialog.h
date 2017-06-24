@@ -20,6 +20,7 @@ class SettingsDialog : public QDialog
 
         void readSettings();
         void writeSettings();
+        void setDefaultValue();
 
     private slots:
         void showSelectPath();
