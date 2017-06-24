@@ -51,6 +51,8 @@ void MainDialog::writeSettings()
     settings.setValue("width", this->width());
     settings.setValue("headerStateResultSearchTable", ui->resultSearchTableView->horizontalHeader()->saveState());
     settings.setValue("geometryResultSearchTable", ui->resultSearchTableView->saveGeometry());
+    settings.setValue("headerStateResultFilterTable", ui->resultFilterTableWidget->horizontalHeader()->saveState());
+    settings.setValue("geometryResultFilterTable", ui->resultFilterTableWidget->saveGeometry());
     settings.endGroup();
 }
 
@@ -63,6 +65,8 @@ void MainDialog::readSettings()
     int width = settings.value("width", 600).toInt();
     ui->resultSearchTableView->horizontalHeader()->restoreState(settings.value("headerStateResultSearchTable").toByteArray());
     ui->resultSearchTableView->restoreGeometry(settings.value("geometryResultSearchTable").toByteArray());
+    ui->resultFilterTableWidget->horizontalHeader()->restoreState(settings.value("headerStateResultFilterTable").toByteArray());
+    ui->resultFilterTableWidget->restoreGeometry(settings.value("geometryResultFilterTable").toByteArray());
     settings.endGroup();
 
     this->resize(width, height);
