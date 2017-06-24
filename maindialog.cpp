@@ -8,6 +8,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QDebug>
 #include "resultsearchairfieldfiltermodel.h"
+#include "settingsdialog.h"
 
 MainDialog::MainDialog(QWidget *parent) :
     QDialog(parent),
@@ -16,7 +17,6 @@ MainDialog::MainDialog(QWidget *parent) :
     ui->setupUi(this);
 
     readSettings();
-    pathToFileDatabase = "D:/projects/Qt/ObstacleCreator-build-Desktop_Qt_5_8_0_MinGW_32bit-Debug/ADB.mdb";
 
     ui->thr1FilterLineEdit->setValidator(new QDoubleValidator());
     ui->thr2FilterLineEdit->setValidator(new QDoubleValidator());
@@ -40,6 +40,7 @@ MainDialog::MainDialog(QWidget *parent) :
     connect(ui->conditionFilterLineEdit, SIGNAL(editingFinished()), this, SLOT(searchObstacle()));
     connect(ui->resultSearchTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(getInfoByAirfield(QModelIndex)));
     connect(this, SIGNAL(selectionAirfield(bool)), ui->filterGroupBox, SLOT(setEnabled(bool)));
+    connect(ui->settingsButton, SIGNAL(clicked(bool)), this, SLOT(showSettings()));
 }
 
 MainDialog::~MainDialog()
@@ -76,16 +77,22 @@ void MainDialog::readSettings()
     ui->obstacleTableWidget->restoreGeometry(settings.value("geometryResultFilterTable").toByteArray());
     ui->splitter->restoreState(settings.value("splitter").toByteArray());
     settings.endGroup();
+    settings.beginGroup("conectDatabase");
+    pathToDatabase = settings.value("pathToDatabase").toString();
+    settings.endGroup();
+
+    if(pathToDatabase.isEmpty())
+        showSettings();
 
     this->resize(width, height);
 }
 
 bool MainDialog::connectDatabase()
 {
-    if (QFileInfo(pathToFileDatabase).exists()) {
+    if (QFileInfo(pathToDatabase).exists()) {
         QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
         db.setHostName("localhost");
-        db.setDatabaseName(QString("Driver={Microsoft Access Driver (*.mdb)};DSN='';DBQ=%1").arg(pathToFileDatabase));
+        db.setDatabaseName(QString("Driver={Microsoft Access Driver (*.mdb)};DSN='';DBQ=%1").arg(pathToDatabase));
         if (db.open())
             return true;
         qDebug() << db.lastError().text();
@@ -163,4 +170,10 @@ void MainDialog::clearTable(QTableWidget *table)
 {
     while (table->rowCount() > 0)
         table->removeRow(0);
+}
+
+void MainDialog::showSettings()
+{
+    SettingsDialog settingsDialog(this);
+    settingsDialog.exec();
 }

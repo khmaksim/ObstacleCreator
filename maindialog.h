@@ -21,7 +21,7 @@ class MainDialog : public QDialog
 
     private:
         Ui::MainDialog *ui;
-        QString pathToFileDatabase;
+        QString pathToDatabase;
         QStandardItemModel *resultSearchModel;
         ResultSearchAirfieldFilterModel *filterSearchModel;
 
@@ -35,6 +35,7 @@ class MainDialog : public QDialog
         void searchAirfield(const QString&);
         void getInfoByAirfield(const QModelIndex&);
         void searchObstacle();
+        void showSettings();
 
     signals:
         void selectionAirfield(bool f=true);

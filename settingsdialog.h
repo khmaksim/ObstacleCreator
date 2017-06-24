@@ -17,6 +17,12 @@ class SettingsDialog : public QDialog
 
     private:
         Ui::SettingsDialog *ui;
+
+        void readSettings();
+        void writeSettings();
+
+    private slots:
+        void showSelectPath();
 };
 
 #endif // SETTINGSDIALOG_H
