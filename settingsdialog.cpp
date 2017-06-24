@@ -1,6 +1,7 @@
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QInputDialog>
 #include <QtCore/QSettings>
 #include <QtCore/QTextStream>
 
@@ -16,6 +17,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     connect(ui->pathDatabaseToolButton, SIGNAL(clicked(bool)), this, SLOT(showSelectPath()));
     connect(ui->outputPathToolButton, SIGNAL(clicked(bool)), this, SLOT(showSelectPath()));
     connect(ui->closeButton, SIGNAL(clicked(bool)), this, SLOT(close()));
+    connect(ui->pathFileTableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showInputValue(QModelIndex)));
 }
 
 SettingsDialog::~SettingsDialog()
@@ -102,4 +104,15 @@ void SettingsDialog::setDefaultValue()
         }
     }
     file.close();
+}
+
+void SettingsDialog::showInputValue(const QModelIndex &index)
+{
+    bool ok;
+    Qt::WindowFlags flags = Qt::Dialog | Qt::WindowContextHelpButtonHint;
+
+    QString value = QInputDialog::getText(this, tr("Enter file name"), tr("File name:"), QLineEdit::Normal,
+                                         ui->pathFileTableWidget->item(index.row(), 1)->text(), &ok, flags);
+    if (ok && !value.isEmpty())
+        ui->pathFileTableWidget->item(index.row(), 1)->setText(value);
 }

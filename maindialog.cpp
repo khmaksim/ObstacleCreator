@@ -180,5 +180,7 @@ void MainDialog::showSettings()
 
 void MainDialog::createFile()
 {
+    QSettings settins;
+
 
 }

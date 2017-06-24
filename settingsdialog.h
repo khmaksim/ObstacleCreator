@@ -24,6 +24,7 @@ class SettingsDialog : public QDialog
 
     private slots:
         void showSelectPath();
+        void showInputValue(const QModelIndex&);
 };
 
 #endif // SETTINGSDIALOG_H
