@@ -9,6 +9,7 @@ namespace Ui {
     class MainDialog;
 }
 class ResultSearchAirfieldFilterModel;
+class QTableWidget;
 
 class MainDialog : public QDialog
 {
@@ -28,6 +29,7 @@ class MainDialog : public QDialog
         void readSettings();
         bool connectDatabase();
         void getListAirfield();
+        void clearTable(QTableWidget *table);
 
     private slots:
         void searchAirfield(const QString&);
