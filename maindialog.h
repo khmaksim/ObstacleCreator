@@ -32,6 +32,10 @@ class MainDialog : public QDialog
     private slots:
         void searchAirfield(const QString&);
         void getInfoByAirfield(const QModelIndex&);
+        void searchObstacle();
+
+    signals:
+        void selectionAirfield(bool f=true);
 };
 
 #endif // MAINDIALOG_H

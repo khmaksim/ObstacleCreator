@@ -18,6 +18,10 @@ MainDialog::MainDialog(QWidget *parent) :
     readSettings();
     pathToFileDatabase = "D:/projects/Qt/ObstacleCreator-build-Desktop_Qt_5_8_0_MinGW_32bit-Debug/ADB.mdb";
 
+    ui->thr1FilterLineEdit->setValidator(new QDoubleValidator());
+    ui->thr2FilterLineEdit->setValidator(new QDoubleValidator());
+    ui->conditionFilterLineEdit->setValidator(new QDoubleValidator());
+
     resultSearchModel = new QStandardItemModel(this);
     resultSearchModel->setHorizontalHeaderLabels(QStringList() << tr("Name 1") << tr("Name 2"));
     filterSearchModel = new ResultSearchAirfieldFilterModel(this);
@@ -29,11 +33,11 @@ MainDialog::MainDialog(QWidget *parent) :
         QMessageBox::critical(this, tr("Critical"), tr("Failed to connect to the databse"));
     }
     getListAirfield();
-//    connect(ui->searchLineEdit, SIGNAL(textChanged(QString)), filterSearchModel, SLOT(setFilterWildcard(QString)));
-//    connect(ui->searchLineEdit, SIGNAL(textChanged(QString)), filterSearchModel, SLOT(setFilterRegExp(QString)));
-//    connect(ui->searchLineEdit, SIGNAL(textChanged(QString)), filterSearchModel, SLOT(setFilterFixedString(QString)));
+
     connect(ui->searchLineEdit, SIGNAL(textChanged(QString)), this, SLOT(searchAirfield(QString)));
+//    connect(ui->thr1AirfieldLineEdit, SIGNAL(editingFinished(), this, SLOT());
     connect(ui->resultSearchTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(getInfoByAirfield(QModelIndex)));
+    connect(this, SIGNAL(selectionAirfield(bool)), ui->filterGroupBox, SLOT(setEnabled(bool)));
 }
 
 MainDialog::~MainDialog()
@@ -51,8 +55,8 @@ void MainDialog::writeSettings()
     settings.setValue("width", this->width());
     settings.setValue("headerStateResultSearchTable", ui->resultSearchTableView->horizontalHeader()->saveState());
     settings.setValue("geometryResultSearchTable", ui->resultSearchTableView->saveGeometry());
-    settings.setValue("headerStateResultFilterTable", ui->resultFilterTableWidget->horizontalHeader()->saveState());
-    settings.setValue("geometryResultFilterTable", ui->resultFilterTableWidget->saveGeometry());
+    settings.setValue("headerStateResultFilterTable", ui->obstacleTableWidget->horizontalHeader()->saveState());
+    settings.setValue("geometryResultFilterTable", ui->obstacleTableWidget->saveGeometry());
     settings.endGroup();
 }
 
@@ -65,8 +69,8 @@ void MainDialog::readSettings()
     int width = settings.value("width", 600).toInt();
     ui->resultSearchTableView->horizontalHeader()->restoreState(settings.value("headerStateResultSearchTable").toByteArray());
     ui->resultSearchTableView->restoreGeometry(settings.value("geometryResultSearchTable").toByteArray());
-    ui->resultFilterTableWidget->horizontalHeader()->restoreState(settings.value("headerStateResultFilterTable").toByteArray());
-    ui->resultFilterTableWidget->restoreGeometry(settings.value("geometryResultFilterTable").toByteArray());
+    ui->obstacleTableWidget->horizontalHeader()->restoreState(settings.value("headerStateResultFilterTable").toByteArray());
+    ui->obstacleTableWidget->restoreGeometry(settings.value("geometryResultFilterTable").toByteArray());
     settings.endGroup();
 
     this->resize(width, height);
@@ -114,5 +118,13 @@ void MainDialog::getInfoByAirfield(const QModelIndex &index)
         ui->nameAirdieldlineEdit->setText(query.value(0).toString());
         ui->icaoAirfieldLineEdit->setText(query.value(1).toString());
         ui->arpAirFieldLineEdit->setText(query.value(2).toString());
+        emit selectionAirfield();
     }
+}
+
+void MainDialog::searchObstacle()
+{
+    QSqlQuery query;
+
+    query.prepare("SELECT FROM ");
 }

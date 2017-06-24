@@ -133,7 +133,10 @@
        </widget>
       </item>
       <item row="2" column="0" rowspan="2" colspan="6">
-       <widget class="QGroupBox" name="groupBox_3">
+       <widget class="QGroupBox" name="filterGroupBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="title">
          <string>Filter objects</string>
         </property>
@@ -146,7 +149,7 @@
            <item row="0" column="0">
             <widget class="QLabel" name="label_3">
              <property name="text">
-              <string>THR 1</string>
+              <string>THR 1 (m)</string>
              </property>
              <property name="buddy">
               <cstring>thr1FilterLineEdit</cstring>
@@ -156,20 +159,47 @@
            <item row="0" column="1" rowspan="3">
             <layout class="QVBoxLayout" name="verticalLayout">
              <item>
-              <widget class="QLineEdit" name="thr1FilterLineEdit"/>
+              <widget class="QLineEdit" name="thr1FilterLineEdit">
+               <property name="inputMask">
+                <string/>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="thr2FilterLineEdit"/>
+              <widget class="QLineEdit" name="thr2FilterLineEdit">
+               <property name="inputMask">
+                <string/>
+               </property>
+               <property name="cursorMoveStyle">
+                <enum>Qt::LogicalMoveStyle</enum>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="conditionFilterLineEdit"/>
+              <widget class="QLineEdit" name="conditionFilterLineEdit">
+               <property name="inputMask">
+                <string/>
+               </property>
+               <property name="cursorMoveStyle">
+                <enum>Qt::LogicalMoveStyle</enum>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_4">
              <property name="text">
-              <string>THR 2</string>
+              <string>THR 2 (m)</string>
              </property>
              <property name="buddy">
               <cstring>thr2FilterLineEdit</cstring>
@@ -179,7 +209,7 @@
            <item row="2" column="0">
             <widget class="QLabel" name="label_5">
              <property name="text">
-              <string>=&lt;</string>
+              <string>=&lt; (m)</string>
              </property>
              <property name="buddy">
               <cstring>conditionFilterLineEdit</cstring>
@@ -356,6 +386,12 @@
         <property name="placeholderText">
          <string>Name of the airfield</string>
         </property>
+        <property name="cursorMoveStyle">
+         <enum>Qt::LogicalMoveStyle</enum>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item row="1" column="1">
@@ -484,7 +520,7 @@
     </layout>
    </item>
    <item row="2" column="0" colspan="2">
-    <widget class="QTableWidget" name="resultFilterTableWidget">
+    <widget class="QTableWidget" name="obstacleTableWidget">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
@@ -545,7 +581,7 @@
   <tabstop>feetAbsoluteRadioButton</tabstop>
   <tabstop>mRelativeRadioButton</tabstop>
   <tabstop>feetRelativeRadioButton</tabstop>
-  <tabstop>resultFilterTableWidget</tabstop>
+  <tabstop>obstacleTableWidget</tabstop>
   <tabstop>settingsButton</tabstop>
   <tabstop>createButton</tabstop>
  </tabstops>
