@@ -425,50 +425,6 @@
      </widget>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QTableWidget" name="obstacleTableWidget">
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
-     </property>
-     <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
-     </property>
-     <attribute name="horizontalHeaderStretchLastSection">
-      <bool>true</bool>
-     </attribute>
-     <column>
-      <property name="text">
-       <string>ID</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Name</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Latitude</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Longitude</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>H</string>
-      </property>
-     </column>
-    </widget>
-   </item>
    <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -562,12 +518,34 @@
      </item>
      <item>
       <widget class="QPushButton" name="createButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Create</string>
        </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QTableView" name="obstacleTableView">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <attribute name="verticalHeaderCascadingSectionResizes">
+      <bool>true</bool>
+     </attribute>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -587,7 +565,7 @@
   <tabstop>feetAbsoluteRadioButton</tabstop>
   <tabstop>mRelativeRadioButton</tabstop>
   <tabstop>feetRelativeRadioButton</tabstop>
-  <tabstop>obstacleTableWidget</tabstop>
+  <tabstop>obstacleTableView</tabstop>
   <tabstop>settingsButton</tabstop>
   <tabstop>createButton</tabstop>
  </tabstops>

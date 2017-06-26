@@ -9,6 +9,7 @@ namespace Ui {
     class MainDialog;
 }
 class ResultSearchAirfieldFilterModel;
+class ObstracleFilterModel;
 class QTableWidget;
 
 class MainDialog : public QDialog
@@ -21,22 +22,28 @@ class MainDialog : public QDialog
 
     private:
         Ui::MainDialog *ui;
-        QString pathToDatabase;
+        QString fileDatabase;
         QStandardItemModel *resultSearchModel;
+        QStandardItemModel *obstracleModel;
         ResultSearchAirfieldFilterModel *filterSearchModel;
+        ObstracleFilterModel *filterObstracleModel;
+        int arpAirfield;
 
         void writeSettings();
         void readSettings();
         bool connectDatabase();
+        void discconnetDatabase();
         void getListAirfield();
+        void getListObstracleByAirfield();
         void clearTable(QTableWidget *table);
+        void createFile(const QString &fileName);
 
     private slots:
         void searchAirfield(const QString&);
         void getInfoByAirfield(const QModelIndex&);
-        void searchObstacle();
         void showSettings();
         void createFile();
+        void filterObstacle();
 
     signals:
         void selectionAirfield(bool f=true);

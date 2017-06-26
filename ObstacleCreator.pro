@@ -26,14 +26,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         maindialog.cpp \
     settingsdialog.cpp \
-    resultsearchairfieldfiltermodel.cpp
+    resultsearchairfieldfiltermodel.cpp \
+    obstraclefiltermodel.cpp \
+    obstracleproxymodel.cpp
 
 HEADERS  += maindialog.h \
     settingsdialog.h \
-    resultsearchairfieldfiltermodel.h
+    resultsearchairfieldfiltermodel.h \
+    obstraclefiltermodel.h \
+    obstracleproxymodel.h
 
 FORMS    += maindialog.ui \
     settingsdialog.ui
 
 RESOURCES += \
     resources.qrc
+
+#RC_ICONS = icon.ico
+
+DISTFILES +=
