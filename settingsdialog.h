@@ -23,7 +23,8 @@ class SettingsDialog : public QDialog
         void setDefaultValue();
 
     private slots:
-        void showSelectPath();
+        void showSelectOutputPath();
+        void showSelectFileDatabase();
         void showInputValue(const QModelIndex&);
 };
 

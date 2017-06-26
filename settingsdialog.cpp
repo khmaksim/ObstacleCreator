@@ -14,8 +14,8 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 
     readSettings();
 
-    connect(ui->pathDatabaseToolButton, SIGNAL(clicked(bool)), this, SLOT(showSelectPath()));
-    connect(ui->outputPathToolButton, SIGNAL(clicked(bool)), this, SLOT(showSelectPath()));
+    connect(ui->pathDatabaseToolButton, SIGNAL(clicked(bool)), this, SLOT(showSelectFileDatabase()));
+    connect(ui->outputPathToolButton, SIGNAL(clicked(bool)), this, SLOT(showSelectOutputPath()));
     connect(ui->closeButton, SIGNAL(clicked(bool)), this, SLOT(close()));
     connect(ui->pathFileTableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showInputValue(QModelIndex)));
 }
@@ -26,15 +26,18 @@ SettingsDialog::~SettingsDialog()
     delete ui;
 }
 
-void SettingsDialog::showSelectPath()
+void SettingsDialog::showSelectOutputPath()
 {
-    QString path = QFileDialog::getExistingDirectory(this, tr("Select path"), QDir::homePath());
-    if (!path.isEmpty()) {
-        if (sender()->objectName().contains("Database"))
-            ui->pathToDatabaseLineEdit->setText(QDir::toNativeSeparators(path));
-        else
-            ui->outputPathLineEdit->setText(QDir::toNativeSeparators(path));
-    }
+    QString path = QFileDialog::getExistingDirectory(this, tr("Select output path the file"), QDir::homePath());
+    if (!path.isEmpty())
+        ui->outputPathLineEdit->setText(QDir::toNativeSeparators(path));
+}
+
+void SettingsDialog::showSelectFileDatabase()
+{
+    QString file = QFileDialog::getOpenFileName(this, tr("Select file database"), QDir::homePath(), tr("Access file database (*.mdb)"));
+    if (!file.isEmpty())
+        ui->fileDatabaseLineEdit->setText(QDir::toNativeSeparators(file));
 }
 
 void SettingsDialog::writeSettings()
@@ -48,7 +51,7 @@ void SettingsDialog::writeSettings()
     settings.setValue("geometryPathFileTable", ui->pathFileTableWidget->saveGeometry());
     settings.endGroup();
     settings.beginGroup("connectDatabase");
-    settings.setValue("pathToDatabase", ui->pathToDatabaseLineEdit->text());
+    settings.setValue("fileDatabase", ui->fileDatabaseLineEdit->text());
     settings.endGroup();
     settings.beginGroup("createFile");
     settings.setValue("outputPath", ui->outputPathLineEdit->text());
@@ -71,7 +74,7 @@ void SettingsDialog::readSettings()
     ui->pathFileTableWidget->restoreGeometry(settings.value("geometryPathFileTable").toByteArray());
     settings.endGroup();
     settings.beginGroup("connectDatabase");
-    ui->pathToDatabaseLineEdit->setText(settings.value("pathToDatabase").toString());
+    ui->fileDatabaseLineEdit->setText(settings.value("pathToDatabase").toString());
     settings.endGroup();
     settings.beginGroup("createFile");
     ui->outputPathLineEdit->setText(settings.value("outputPath").toString());
