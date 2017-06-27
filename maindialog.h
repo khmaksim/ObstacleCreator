@@ -8,9 +8,11 @@
 namespace Ui {
     class MainDialog;
 }
+
 class ResultSearchAirfieldFilterModel;
 class ObstracleFilterModel;
-class QTableWidget;
+class QListWidgetItem;
+class QFile;
 
 class MainDialog : public QDialog
 {
@@ -28,6 +30,7 @@ class MainDialog : public QDialog
         ResultSearchAirfieldFilterModel *filterSearchModel;
         ObstracleFilterModel *filterObstacleModel;
         int arpAirfield;
+        QList<QListWidgetItem*> reportItems;
 
         void writeSettings();
         void readSettings();
@@ -35,8 +38,9 @@ class MainDialog : public QDialog
         void discconnetDatabase();
         void getListAirfield();
         void getListObstracleByAirfield();
-        void clearTable(QTableWidget *table);
         void createFile(const QString &fileName, bool showAbsolute, bool showRelative, double);
+        void createReport(const QFile&);
+        void showReport();
 
     private slots:
         void searchAirfield(const QString&);

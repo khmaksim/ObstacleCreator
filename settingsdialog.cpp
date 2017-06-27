@@ -19,7 +19,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     connect(ui->outputPathToolButton, SIGNAL(clicked(bool)), this, SLOT(showSelectOutputPath()));
     connect(ui->closeButton, SIGNAL(clicked(bool)), this, SLOT(close()));
     connect(ui->pathFileTableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showInputValue(QModelIndex)));
-    connect(ui->connectDatabaseButton, SIGNAL(clicked(bool)), this, SLOT());
 }
 
 SettingsDialog::~SettingsDialog()

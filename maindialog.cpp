@@ -5,7 +5,9 @@
 #include <QtSql/QSqlError>
 #include <QtCore/QSettings>
 #include <QtCore/QFileInfo>
+#include <QtCore/QDir>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QListWidget>
 #include <QDebug>
 #include "resultsearchairfieldfiltermodel.h"
 #include "obstraclefiltermodel.h"
@@ -456,6 +458,7 @@ void MainDialog::create()
         }
         createFile(fileName, showAbsolute, showRelative, relationValue);
     }
+    showReport();
 }
 
 void MainDialog::createFile(const QString &fileName, bool showAbsolute, bool showRelative, double relationValue)
@@ -482,6 +485,7 @@ void MainDialog::createFile(const QString &fileName, bool showAbsolute, bool sho
         }
     }
     file.close();
+    createReport(file);
 }
 
 void MainDialog::getListObstracleByAirfield()
@@ -507,4 +511,25 @@ void MainDialog::getListObstracleByAirfield()
     }
     ui->obstacleTableView->setColumnHidden(5, true);
     ui->obstacleTableView->setColumnHidden(6, true);
+}
+
+void MainDialog::createReport(const QFile &file)
+{
+    QListWidgetItem *item = new QListWidgetItem(QDir::toNativeSeparators(file.fileName()));
+    if (file.size() == 0)
+        item->setTextColor(QColor(Qt::red));
+    reportItems.append(item);
+}
+
+void MainDialog::showReport()
+{
+    QListWidget *listWidget = new QListWidget();
+
+    QList<QListWidgetItem*>::const_iterator constIt = reportItems.constBegin();
+    for (; constIt != reportItems.constEnd(); ++constIt)
+        listWidget->addItem(*constIt);
+
+    listWidget->setWindowTitle(this->windowTitle() + " - Report");
+    listWidget->setWindowFlags(listWidget->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    listWidget->show();
 }
