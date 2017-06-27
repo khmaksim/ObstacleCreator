@@ -26,7 +26,7 @@ class MainDialog : public QDialog
         QStandardItemModel *resultSearchModel;
         QStandardItemModel *obstracleModel;
         ResultSearchAirfieldFilterModel *filterSearchModel;
-        ObstracleFilterModel *filterObstracleModel;
+        ObstracleFilterModel *filterObstacleModel;
         int arpAirfield;
 
         void writeSettings();
@@ -36,13 +36,13 @@ class MainDialog : public QDialog
         void getListAirfield();
         void getListObstracleByAirfield();
         void clearTable(QTableWidget *table);
-        void createFile(const QString &fileName);
+        void createFile(const QString &fileName, bool showAbsolute, bool showRelative, double);
 
     private slots:
         void searchAirfield(const QString&);
         void getInfoByAirfield(const QModelIndex&);
         void showSettings();
-        void createFile();
+        void create();
         void filterObstacle();
 
     signals:

@@ -26,10 +26,10 @@ MainDialog::MainDialog(QWidget *parent) :
 
     obstracleModel = new QStandardItemModel(this);
     obstracleModel->setHorizontalHeaderLabels(QStringList() << tr("ID") << tr("Name") << tr("LAT") << tr("LON") << tr("H"));
-    filterObstracleModel = new ObstracleFilterModel(this);
-    filterObstracleModel->setSourceModel(obstracleModel);
+    filterObstacleModel = new ObstracleFilterModel(this);
+    filterObstacleModel->setSourceModel(obstracleModel);
     ObstracleProxyModel *proxyObstracleModel = new ObstracleProxyModel(this);
-    proxyObstracleModel->setSourceModel(filterObstracleModel);
+    proxyObstracleModel->setSourceModel(filterObstacleModel);
     ui->obstacleTableView->setModel(proxyObstracleModel);
     ui->obstacleTableView->setColumnHidden(5, true);
     ui->obstacleTableView->setColumnHidden(6, true);
@@ -55,7 +55,7 @@ MainDialog::MainDialog(QWidget *parent) :
     connect(this, SIGNAL(selectionAirfield(bool)), ui->createButton, SLOT(setEnabled(bool)));
     connect(this, SIGNAL(selectionAirfield(bool)), this, SLOT(filterObstacle()));
     connect(ui->settingsButton, SIGNAL(clicked(bool)), this, SLOT(showSettings()));
-    connect(ui->createButton, SIGNAL(clicked(bool)), this, SLOT(createFile()));
+    connect(ui->createButton, SIGNAL(clicked(bool)), this, SLOT(create()));
 }
 
 MainDialog::~MainDialog()
@@ -74,8 +74,8 @@ void MainDialog::writeSettings()
     settings.setValue("width", this->width());
     settings.setValue("headerStateResultSearchTable", ui->resultSearchTableView->horizontalHeader()->saveState());
     settings.setValue("geometryResultSearchTable", ui->resultSearchTableView->saveGeometry());
-    settings.setValue("headerStateObsracleTable", ui->obstacleTableView->horizontalHeader()->saveState());
-    settings.setValue("geometryObstracleTable", ui->obstacleTableView->saveGeometry());
+    settings.setValue("headerStateObstacleTable", ui->obstacleTableView->horizontalHeader()->saveState());
+    settings.setValue("geometryObstacleTable", ui->obstacleTableView->saveGeometry());
     settings.setValue("splitter", ui->splitter->saveState());
     settings.endGroup();
 }
@@ -89,8 +89,8 @@ void MainDialog::readSettings()
     int width = settings.value("width", 600).toInt();
     ui->resultSearchTableView->horizontalHeader()->restoreState(settings.value("headerStateResultSearchTable").toByteArray());
     ui->resultSearchTableView->restoreGeometry(settings.value("geometryResultSearchTable").toByteArray());
-    ui->obstacleTableView->horizontalHeader()->restoreState(settings.value("headerStateObstracleTable").toByteArray());
-    ui->obstacleTableView->restoreGeometry(settings.value("geometryObstracleTable").toByteArray());
+    ui->obstacleTableView->horizontalHeader()->restoreState(settings.value("headerStateObstacleTable").toByteArray());
+    ui->obstacleTableView->restoreGeometry(settings.value("geometryObstacleTable").toByteArray());
     ui->splitter->restoreState(settings.value("splitter").toByteArray());
     settings.endGroup();
     settings.beginGroup("connectDatabase");
@@ -172,30 +172,9 @@ void MainDialog::getInfoByAirfield(const QModelIndex &index)
 
 void MainDialog::filterObstacle()
 {
-    filterObstracleModel->setFilterValue(2, QVariant(qMin((ui->thr1FilterLineEdit->text().toDouble() + ui->thr1AirfieldLineEdit->text().toDouble(),
-                                                           ui->thr2FilterLineEdit->text().toDouble() + ui->thr2AirfieldLineEdit->text().toDouble()),
+    filterObstacleModel->setFilterValue(2, QVariant(qMin(((ui->thr1FilterLineEdit->text().toDouble() + ui->thr1AirfieldLineEdit->text().toDouble()),
+                                                           (ui->thr2FilterLineEdit->text().toDouble() + ui->thr2AirfieldLineEdit->text().toDouble())),
                                                           ui->conditionFilterLineEdit->text().toDouble())));
-//    QSqlQuery query;
-
-//    query.prepare("SELECT TOP 10 pr.CODA, pr.TYPPREP, pr.LAT, pr.LON, pr.Habs "
-//                  "FROM PREPARPT pr, AERODROMI airfield "
-//                  "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND pr.Habs > ?");
-//    query.addBindValue(arpAirfield);
-//    query.addBindValue(qMin(qMin(ui->thr1FilterLineEdit->text().toDouble() + ui->thr1AirfieldLineEdit->text().toDouble(),
-//                                 ui->thr2FilterLineEdit->text().toDouble() + ui->thr2AirfieldLineEdit->text().toDouble()),
-//                            ui->conditionFilterLineEdit->text().toDouble()));
-//    if (!query.exec()) {
-//        qDebug() << query.lastError().text();
-//        return;
-//    }
-//    while (query.next()) {
-//        ui->obstacleTableWidget->insertRow(0);
-//        ui->obstacleTableWidget->setItem(0, 0, new QTableWidgetItem(query.value(0).toString()));
-//        ui->obstacleTableWidget->setItem(0, 1, new QTableWidgetItem(query.value(1).toString()));
-//        ui->obstacleTableWidget->setItem(0, 2, new QTableWidgetItem(query.value(2).toString()));
-//        ui->obstacleTableWidget->setItem(0, 3, new QTableWidgetItem(query.value(3).toString()));
-//        ui->obstacleTableWidget->setItem(0, 4, new QTableWidgetItem(QString::number(query.value(4).toDouble(), 'f', 2)));
-//    }
 }
 
 void MainDialog::showSettings()
@@ -204,754 +183,303 @@ void MainDialog::showSettings()
     settingsDialog.exec();
 }
 
-void MainDialog::createFile()
+void MainDialog::create()
 {
     QSettings settings;
 
     settings.beginGroup("createFile");
     QString outputPath = settings.value("outputPath").toString();
-    if (!settings.contains("descriptionNameFiles"))
-        showSettings();
 
-    QList<QVariant> descriptionNameFile = settings.value("descriptionNameFiles").toMap().values();
+    if (!settings.contains("nameFiles"))
+        showSettings();
+    QStringList nameFile = settings.value("nameFiles").toStringList();
     settings.endGroup();
 
-//    double condition = ui->conditionFilterLineEdit->text().toDouble();
-//    double thr1 = ui->thr1FilterLineEdit->text().toDouble();
-//    double thr2 = ui->thr1FilterLineEdit->text().toDouble();
+    double condition = ui->conditionFilterLineEdit->text().toDouble();
+    double thr1 = ui->thr1FilterLineEdit->text().toDouble() + ui->thr1AirfieldLineEdit->text().toDouble();
+    double thr2 = ui->thr1FilterLineEdit->text().toDouble() + ui->thr2AirfieldLineEdit->text().toDouble();
+    bool mAbsolute = ui->mAbsoluteRadioButton->isChecked();
+    bool feetAbsolute = ui->feetAbsoluteRadioButton->isChecked();
+    bool mRelative = ui->mRelativeRadioButton->isChecked();
+    bool feetRelative = ui->feetRelativeRadioButton->isChecked();
+    double relationValue;
+    bool showAbsolute;
+    bool showRelative;
 
-    QSqlQuery query;
-    for (int i = 0; i < descriptionNameFile.count(); i++) {
-        createFile(outputPath + "/" + descriptionNameFile.at(i).toString());
-
-//            switch (i) {
-//                case 0:
-//                    if (ui->mAbsoluteRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 2 "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toString() << endl;
-//                            stream << "" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 1:
-//                    if (ui->feetAbsoluteRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 2 "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 2:
-//                    if (ui->mAbsoluteRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 3:
-//                    if (ui->feetAbsoluteRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 4:
-//                    if (ui->mAbsoluteRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = 1 "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 5:
-//                    if (ui->feetAbsoluteRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = 1 "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 6:
-//                    if (ui->mAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(condition);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "H" << query.value(2).toDouble() - condition << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 7:
-//                    if (ui->mAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr1);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr1 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 8:
-//                    if (ui->mAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr2);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr2 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 9:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->feetRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(condition);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << endl;
-//                            stream << "H" << (query.value(2).toDouble() - condition) * 3.28 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 10:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->feetRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr1);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "H" << (query.value(2).toDouble() - thr1)  * 3.28 << " '" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 11:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->feetRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr2);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "H" << (query.value(2).toDouble() - thr2)  * 3.28 << " '" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 12:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(condition);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "H" << (query.value(2).toDouble() - condition) << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 13:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr1);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "H" << (query.value(2).toDouble() - thr1) << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 14:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr2);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr2 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 15:
-//                    if (ui->mAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '1' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(condition);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "H" << query.value(2).toDouble() - condition << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 16:
-//                    if (ui->mAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '1' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr1);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr1 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 17:
-//                    if (ui->mAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '1' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr2);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr2 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 18:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->feetRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '1' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(condition);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "H" << query.value(2).toDouble() - condition << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 19:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->feetRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '1' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr1);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr1 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 20:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->feetRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '1' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr2);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr2 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 21:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '1' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(condition);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "H" << query.value(2).toDouble() - condition << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 22:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '1' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr1);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr1 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 23:
-//                    if (ui->feetAbsoluteRadioButton->isChecked() && ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '1' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr2);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << "H" << query.value(2).toDouble() * 3.28 << " '" << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr2 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 24:
-//                    if (ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(condition);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << endl;
-//                            stream << "H" << query.value(2).toDouble() - condition << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 25:
-//                    if (ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr1);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr1 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 26:
-//                    if (ui->mRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr2);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << endl;
-//                            stream << "H" << query.value(2).toDouble() - thr2 << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 27:
-//                    if (ui->feetRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(condition);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << endl;
-//                            stream << "H" << (query.value(2).toDouble() - condition) * 3.28 << " '" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 28:
-//                    if (ui->feetRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr1);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << endl;
-//                            stream << "H" << (query.value(2).toDouble() - thr1) * 3.28 << " '" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                case 29:
-//                    if (ui->feetRelativeRadioButton->isChecked()) {
-//                        query.prepare("SELECT pr.LAT, pr.LON, pr.Habs "
-//                                      "FROM PREPARPT pr, AERODROMI airfield "
-//                                      "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA AND art_nat = 1 OR art_nat = '' "
-//                                      "AND MARKER = '' AND pr.Habs > ? "
-//                                      "ORDER BY pr.Habs DESC");
-//                        query.addBindValue(arpAirfield);
-//                        query.addBindValue(thr2);
-//                        if (!query.exec()) {
-//                            qDebug() << query.lastError().text();
-//                            return;
-//                        }
-//                        while (query.next()) {
-//                            stream << query.value(0).toString().simplified() << endl;
-//                            stream << query.value(1).toString().simplified() << endl;
-//                            stream << endl;
-//                            stream << "H" << (query.value(2).toDouble() - thr2) * 3.28 << " '" << endl;
-//                            stream << "1" << endl;
-//                        }
-//                    }
-//                    else
-//                        file.remove();
-//                    break;
-//                default:
-//                    break;
-//            }
-//            break;
-//        }
-//        file.close();
+    QString fileName;
+    for (int i = 0; i < nameFile.count(); i++) {
+        relationValue = 0;
+        showAbsolute = showRelative = true;
+        fileName = outputPath + "/" + nameFile.at(i);
+        switch (i) {
+            case 0:
+                if (!mAbsolute)
+                    continue;
+                filterObstacleModel->setFilterValue(5, "2");
+                showRelative = false;
+                break;
+            case 1:
+                if (!feetAbsolute)
+                    continue;
+                filterObstacleModel->setFilterValue(5, "2");
+                showRelative = false;
+                break;
+            case 2:
+                if (!mAbsolute)
+                    continue;
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                showRelative = false;
+                break;
+            case 3:
+                if (!feetAbsolute)
+                    continue;
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                showRelative = false;
+                break;
+            case 4:
+                if (!mAbsolute)
+                    continue;
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                showRelative = false;
+                break;
+            case 5:
+                if (!feetAbsolute)
+                    continue;
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                showRelative = false;
+                break;
+            case 6:
+                if (!mAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, condition);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = condition;
+                break;
+            case 7:
+                if (!mAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr1);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = thr1;
+                break;
+            case 8:
+                if (!mAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr2);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = thr2;
+                break;
+            case 9:
+                if (!feetAbsolute || !feetRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, condition);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = condition;
+                break;
+            case 10:
+                if (!feetAbsolute || !feetRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr1);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = thr1;
+                break;
+            case 11:
+                if (!feetAbsolute || !feetRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr2);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = thr2;
+                break;
+            case 12:
+                if (!feetAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, condition);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = condition;
+                break;
+            case 13:
+                if (!feetAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr1);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = thr1;
+                break;
+            case 14:
+                if (!feetAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr2);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = thr2;
+                break;
+            case 15:
+                if (!mAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, condition);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                relationValue = condition;
+                break;
+            case 16:
+                if (!mAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr1);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                relationValue = thr1;
+                break;
+            case 17:
+                if (!mAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr2);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                relationValue = thr2;
+                break;
+            case 18:
+                if (!feetAbsolute || !feetRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, condition);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                relationValue = condition;
+                break;
+            case 19:
+                if (!feetAbsolute || !feetRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr1);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                relationValue = thr1;
+                break;
+            case 20:
+                if (!feetAbsolute || !feetRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr2);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                relationValue = thr2;
+                break;
+            case 21:
+                if (!feetAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, condition);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                relationValue = condition;
+                break;
+            case 22:
+                if (!feetAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr1);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                relationValue = thr1;
+                break;
+            case 23:
+                if (!feetAbsolute || !mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr2);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "1");
+                relationValue = thr2;
+                break;
+            case 24:
+                if (!mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, condition);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = condition;
+                showAbsolute = false;
+                break;
+            case 25:
+                if (!mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr1);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = thr1;
+                showAbsolute = false;
+                break;
+            case 26:
+                if (!mRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr2);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = thr2;
+                showAbsolute = false;
+                break;
+            case 27:
+                if (!feetRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, condition);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = condition;
+                showAbsolute = false;
+                break;
+            case 28:
+                if (!feetRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr1);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = thr1;
+                showAbsolute = false;
+                break;
+            case 29:
+                if (!feetRelative)
+                    continue;
+                filterObstacleModel->setFilterValue(4, thr2);
+                filterObstacleModel->setFilterValue(5, "1?");
+                filterObstacleModel->setFilterValue(6, "");
+                relationValue = thr2;
+                showAbsolute = false;
+                break;
+            default:
+                continue;
+                break;
+        }
+        createFile(fileName, showAbsolute, showRelative, relationValue);
     }
 }
 
-void MainDialog::createFile(const QString &fileName)
+void MainDialog::createFile(const QString &fileName, bool showAbsolute, bool showRelative, double relationValue)
 {
     QFile file(fileName);
     if (file.open(QFile::WriteOnly | QFile::Text)) {
         QTextStream stream(&file);
-        stream << endl;
+        for (int row = 0; row < filterObstacleModel->rowCount(); row++) {
+            stream << filterObstacleModel->data(filterObstacleModel->index(row, 2)).toString().simplified() << endl;
+            stream << filterObstacleModel->data(filterObstacleModel->index(row, 3)).toString().simplified() << endl;
+            if (ui->mAbsoluteRadioButton->isChecked() && showAbsolute)
+                stream << filterObstacleModel->data(filterObstacleModel->index(row, 4)).toDouble() << endl;
+            else if (ui->feetAbsoluteRadioButton->isChecked() && showAbsolute)
+                stream << filterObstacleModel->data(filterObstacleModel->index(row, 4)).toDouble() * 3.28 << " '" << endl;
+            else
+                stream << "" << endl;
+            if (ui->mRelativeRadioButton->isChecked() && showRelative)
+                stream << (filterObstacleModel->data(filterObstacleModel->index(row, 4)).toDouble() - relationValue) << endl;
+            else if (ui->feetRelativeRadioButton && showRelative)
+                stream << (filterObstacleModel->data(filterObstacleModel->index(row, 4)).toDouble() - relationValue) * 3.28 << " '" << endl;
+            else
+                stream << "" << endl;
+            stream << "1" << endl;
+        }
     }
     file.close();
 }

@@ -1,3 +1,4 @@
+
 #include "obstraclefiltermodel.h"
 #include <QDebug>
 
