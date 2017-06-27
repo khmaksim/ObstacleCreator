@@ -13,11 +13,13 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     readSettings();
+    ui->pathFileTableWidget->setSortingEnabled(false);
 
     connect(ui->pathDatabaseToolButton, SIGNAL(clicked(bool)), this, SLOT(showSelectFileDatabase()));
     connect(ui->outputPathToolButton, SIGNAL(clicked(bool)), this, SLOT(showSelectOutputPath()));
     connect(ui->closeButton, SIGNAL(clicked(bool)), this, SLOT(close()));
     connect(ui->pathFileTableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showInputValue(QModelIndex)));
+    connect(ui->connectDatabaseButton, SIGNAL(clicked(bool)), this, SLOT());
 }
 
 SettingsDialog::~SettingsDialog()
@@ -55,11 +57,14 @@ void SettingsDialog::writeSettings()
     settings.endGroup();
     settings.beginGroup("createFile");
     settings.setValue("outputPath", ui->outputPathLineEdit->text());
-    QMap<QString, QVariant> descriptionNameFile;
-    for (int row = 0; row < ui->pathFileTableWidget->rowCount(); row++)
-        descriptionNameFile[ui->pathFileTableWidget->item(row, 0)->text()] = ui->pathFileTableWidget->item(row, 1)->text();
-    settings.setValue("descriptionNameFiles", descriptionNameFile);
-    settings.endGroup();
+    QStringList descriptionFile;
+    QStringList nameFile;
+    for (int row = 0; row < ui->pathFileTableWidget->rowCount(); row++) {
+        descriptionFile << ui->pathFileTableWidget->item(row, 0)->text();
+        nameFile << ui->pathFileTableWidget->item(row, 1)->text();
+    }
+    settings.setValue("descriptionFiles", descriptionFile);
+    settings.setValue("nameFiles", nameFile);
     settings.endGroup();
 }
 
@@ -80,12 +85,15 @@ void SettingsDialog::readSettings()
     ui->outputPathLineEdit->setText(settings.value("outputPath").toString());
     if (!settings.contains("descriptionNameFiles"))
         setDefaultValue();
-    QMap<QString, QVariant> descriptionNameFile = settings.value("descriptionNameFiles").toMap();
-    QMap<QString, QVariant>::const_iterator constIt = descriptionNameFile.constBegin();
-    while (constIt != descriptionNameFile.constEnd()) {
-        ui->pathFileTableWidget->insertRow(0);
-        ui->pathFileTableWidget->setItem(0, 0, new QTableWidgetItem(constIt.key()));
-        ui->pathFileTableWidget->setItem(0, 1, new QTableWidgetItem(constIt.value().toString()));
+    int row = 0;
+    QStringList descriptionFile = settings.value("descriptionFiles").toStringList();
+    QStringList nameFile = settings.value("nameFiles").toStringList();
+    QStringList::const_iterator constIt = descriptionFile.constBegin();
+    while (constIt != descriptionFile.constEnd()) {
+        ui->pathFileTableWidget->insertRow(row);
+        ui->pathFileTableWidget->setItem(row, 0, new QTableWidgetItem((*constIt)));
+        ui->pathFileTableWidget->setItem(row, 1, new QTableWidgetItem(nameFile.at(row)));
+        row++;
         ++constIt;
     }
     settings.endGroup();
@@ -99,11 +107,13 @@ void SettingsDialog::setDefaultValue()
     if (file.open(QFile::ReadOnly)) {
         QTextStream stream(&file);
         QString line;
+        int row = 0;
         while (stream.readLineInto(&line)) {
             QStringList keyValue = line.split(";");
-            ui->pathFileTableWidget->insertRow(0);
-            ui->pathFileTableWidget->setItem(0, 0, new QTableWidgetItem(keyValue.at(0)));
-            ui->pathFileTableWidget->setItem(0, 1, new QTableWidgetItem(keyValue.at(1)));
+            ui->pathFileTableWidget->insertRow(row);
+            ui->pathFileTableWidget->setItem(row, 0, new QTableWidgetItem(keyValue.at(0)));
+            ui->pathFileTableWidget->setItem(row, 1, new QTableWidgetItem(keyValue.at(1)));
+            row++;
         }
     }
     file.close();
