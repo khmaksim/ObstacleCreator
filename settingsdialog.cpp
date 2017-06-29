@@ -4,6 +4,10 @@
 #include <QtWidgets/QInputDialog>
 #include <QtCore/QSettings>
 #include <QtCore/QTextStream>
+#include <QtCore/QMessageLogger>
+#include <QDebug>
+
+extern const char *nameFileLog;
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
@@ -114,6 +118,10 @@ void SettingsDialog::setDefaultValue()
             ui->pathFileTableWidget->setItem(row, 1, new QTableWidgetItem(keyValue.at(1)));
             row++;
         }
+    }
+    else {
+        QMessageLogger(nameFileLog, 0, 0).warning() << file.errorString();
+        QMessageLogger(nameFileLog, 0, 0).debug() << file.fileName();
     }
     file.close();
 }

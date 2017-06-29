@@ -29,7 +29,7 @@ class MainDialog : public QDialog
         QStandardItemModel *obstracleModel;
         ResultSearchAirfieldFilterModel *filterSearchModel;
         ObstracleFilterModel *filterObstacleModel;
-        int arpAirfield;
+        int idAirfield;
         QList<QListWidgetItem*> reportItems;
 
         void writeSettings();

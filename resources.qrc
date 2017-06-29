@@ -4,5 +4,6 @@
         <file>images/settings.png</file>
         <file>images/A.png</file>
         <file>descriptionFileName.txt</file>
+        <file>obstaclecreator_ru.qm</file>
     </qresource>
 </RCC>
