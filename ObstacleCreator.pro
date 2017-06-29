@@ -45,3 +45,5 @@ RESOURCES += \
 #RC_ICONS = icon.ico
 
 DISTFILES +=
+
+TRANSLATIONS = obstaclecreator_ru.ts
