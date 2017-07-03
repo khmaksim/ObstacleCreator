@@ -7,8 +7,6 @@
 #include <QtCore/QMessageLogger>
 #include <QDebug>
 
-extern const char *nameFileLog;
-
 SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SettingsDialog)
@@ -120,8 +118,8 @@ void SettingsDialog::setDefaultValue()
         }
     }
     else {
-        QMessageLogger(nameFileLog, 0, 0).warning() << file.errorString();
-        QMessageLogger(nameFileLog, 0, 0).debug() << file.fileName();
+        QMessageLogger(0, 0, 0).warning() << file.errorString();
+        QMessageLogger(0, 0, 0).debug() << file.fileName();
     }
     file.close();
 }

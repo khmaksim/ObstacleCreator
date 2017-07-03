@@ -15,8 +15,6 @@
 #include "obstracleproxymodel.h"
 #include "settingsdialog.h"
 
-const char *nameFileLog = "ObstacleCreator.log";
-
 MainDialog::MainDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::MainDialog)
@@ -66,6 +64,7 @@ MainDialog::MainDialog(QWidget *parent) :
 MainDialog::~MainDialog()
 {
 //    discconnetDatabase();
+
     writeSettings();
     delete ui;
 }
@@ -116,12 +115,12 @@ bool MainDialog::connectDatabase()
         db.setHostName("localhost");
         db.setDatabaseName(QString("Driver={Microsoft Access Driver (*.mdb)};DSN='';DBQ=%1").arg(fileDatabase));
         if (db.open()) {
-            QMessageLogger(nameFileLog, 0, 0).info("Connect database");
-            QMessageLogger(nameFileLog, 0, 0).debug() << "file database" << fileDatabase;
+            QMessageLogger(0, 0, 0).info("Connect database");
+            QMessageLogger(0, 0, 0).debug() << "file database" << fileDatabase;
             return true;
         }
-        QMessageLogger(nameFileLog, 0, 0).warning("Failed to connect to the database");
-        QMessageLogger(nameFileLog, 0, 0).debug() << db.lastError().text();
+        QMessageLogger(0, 0, 0).warning("Failed to connect to the database");
+        QMessageLogger(0, 0, 0).debug() << db.lastError().text();
 //        qDebug() << db.lastError().text();
     }
     return false;
@@ -132,7 +131,7 @@ void MainDialog::discconnetDatabase()
     QSqlDatabase db = QSqlDatabase::database();
     db.close();
     QMessageBox::information(this, tr("Information"), tr("The database connection is broken."));
-    QMessageLogger(nameFileLog, 0, 0).info("The database connection is broken");
+    QMessageLogger(0, 0, 0).info("The database connection is broken");
 }
 
 void MainDialog::getListAirfield()
@@ -141,8 +140,8 @@ void MainDialog::getListAirfield()
 
     query.exec("SELECT id_aero, NAMEI, NAMEI2 FROM AERODROMI ORDER BY NAMEI, NAMEI2");
     if (query.lastError().isValid()) {
-        QMessageLogger(nameFileLog, 0, 0).warning() << query.lastError().text();
-        QMessageLogger(nameFileLog, 0, 0).debug() << query.lastQuery();
+        QMessageLogger(0, 0, 0).warning() << query.lastError().text();
+        QMessageLogger(0, 0, 0).debug() << query.lastQuery();
     }
     while (query.next()) {
         resultSearchModel->appendRow(QList<QStandardItem*>()
@@ -167,8 +166,8 @@ void MainDialog::getInfoByAirfield(const QModelIndex &index)
     query.prepare("SELECT airfield.HABS FROM AERODROMI airfield WHERE airfield.id_aero = ?");
     query.addBindValue(filterSearchModel->data(filterSearchModel->index(index.row(), 2)).toString());
     if (!query.exec()) {
-        QMessageLogger(nameFileLog, 0, 0).warning() << query.lastError().text();
-        QMessageLogger(nameFileLog, 0, 0).debug() << query.lastQuery();
+        QMessageLogger(0, 0, 0).warning() << query.lastError().text();
+        QMessageLogger(0, 0, 0).debug() << query.lastQuery();
         return;
     }
     if (query.first() && query.value(0).toString().isEmpty())
@@ -177,22 +176,26 @@ void MainDialog::getInfoByAirfield(const QModelIndex &index)
     query.prepare("SELECT * FROM VPP vpp WHERE vpp.id_arpt = ?");
     query.addBindValue(filterSearchModel->data(filterSearchModel->index(index.row(), 2)).toString());
     if (!query.exec()) {
-        QMessageLogger(nameFileLog, 0, 0).warning() << query.lastError().text();
-        QMessageLogger(nameFileLog, 0, 0).debug() << query.lastQuery();
+        QMessageLogger(0, 0, 0).warning() << query.lastError().text();
+        QMessageLogger(0, 0, 0).debug() << query.lastQuery();
         return;
     }
-    if (!query.first())
+    if (!query.first()) {
         QMessageBox::warning(this, tr("Warning"), tr("The selected airfield not the runway."));
+        return;
+    }
 
     query.prepare("SELECT * FROM VPP vpp, torezh tr WHERE vpp.id_arpt = ? AND vpp.id_vpp = tr.id_vpp");
     query.addBindValue(filterSearchModel->data(filterSearchModel->index(index.row(), 2)).toString());
     if (!query.exec()) {
-        QMessageLogger(nameFileLog, 0, 0).warning() << query.lastError().text();
-        QMessageLogger(nameFileLog, 0, 0).debug() << query.lastQuery();
+        QMessageLogger(0, 0, 0).warning() << query.lastError().text();
+        QMessageLogger(0, 0, 0).debug() << query.lastQuery();
         return;
     }
-    if (!query.first())
+    if (!query.first()) {
         QMessageBox::warning(this, tr("Warning"), tr("The selected airfield not the ends."));
+        return;
+    }
 
 //    query.prepare("SELECT airfield.NAMEI, airfield.IDRUS1, airfiled.id_aero, MIN(tr1) as minTr1, MIN(tr2) as minTr2 "
 //                  "FROM (SELECT airfield.NAMEI, airfield.IDRUS1, airfiled.id_aero, MIN(tr1.H_threshold) as tr1, MAX(tr2.H_threshold) as tr2 "
@@ -208,8 +211,8 @@ void MainDialog::getInfoByAirfield(const QModelIndex &index)
                   "GROUP BY airfield.NAMEI, airfield.IDRUS1, airfield.HABS, airfield.id_aero");
     query.addBindValue(filterSearchModel->data(filterSearchModel->index(index.row(), 2)).toInt());
     if (!query.exec()) {
-        QMessageLogger(nameFileLog, 0, 0).warning() << query.lastError().text();
-        QMessageLogger(nameFileLog, 0, 0).debug() << query.lastQuery();
+        QMessageLogger(0, 0, 0).warning() << query.lastError().text();
+        QMessageLogger(0, 0, 0).debug() << query.lastQuery();
         return;
     }
     if (query.first()) {
@@ -537,8 +540,8 @@ void MainDialog::createFile(const QString &fileName, bool showAbsolute, bool sho
         }
     }
     else {
-        QMessageLogger(nameFileLog, 0, 0).warning() << file.errorString();
-        QMessageLogger(nameFileLog, 0, 0).debug() << file.fileName();
+        QMessageLogger(0, 0, 0).warning() << file.errorString();
+        QMessageLogger(0, 0, 0).debug() << file.fileName();
     }
     file.close();
     createReport(file);
@@ -546,14 +549,16 @@ void MainDialog::createFile(const QString &fileName, bool showAbsolute, bool sho
 
 void MainDialog::getListObstracleByAirfield()
 {
+    ui->obstacleTableView->model()->removeRows(0, ui->obstacleTableView->model()->rowCount());
+
     QSqlQuery query;
 
     query.prepare("SELECT pr.CODA, pr.TYPPREP, pr.LAT, pr.LON, pr.Habs,  pr.art_nat, pr.MARKER FROM PREPARPT pr, AERODROMI airfield "
                   "WHERE airfield.id_aero = ? AND airfield.id_aero = pr.CODA ORDER BY pr.Habs DESC");
     query.addBindValue(idAirfield);
     if (!query.exec()) {
-        QMessageLogger(nameFileLog, 0, 0).warning() << query.lastError().text();
-        QMessageLogger(nameFileLog, 0, 0).debug() << query.lastQuery();
+        QMessageLogger(0, 0, 0).warning() << query.lastError().text();
+        QMessageLogger(0, 0, 0).debug() << query.lastQuery();
         return;
     }
     while (query.next()) {
